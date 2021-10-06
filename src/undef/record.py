@@ -1,7 +1,6 @@
 from io import BytesIO
 import struct
 
-
 class DecodeError(Exception):
     """NDEF decode error exception class."""
     pass
@@ -23,8 +22,42 @@ class Record(object):
 
 
     def __init__(self, type=None, name=None, data=None):
+        self._type = self._decode_type(*self._encode_type(type))
         self.name = name
         self._data = data if data else bytearray()
+
+    @property
+    def type(self):
+        """A str object representing the NDEF Record TNF and TYPE fields. The
+        type attribute is read-only.
+        """
+        return self._type
+
+    @property
+    def name(self):
+        """A str object representing the NDEF Record ID field. The name
+        attribute is read-writable.
+        """
+        return getattr(self, '_name', '')
+
+    @name.setter
+    def name(self, value):
+        if value is None:
+            _value = ''
+        elif isinstance(value, str):
+            _value = (value.encode('latin').decode('latin'))
+        elif isinstance(value, (bytes, bytearray)):
+            _value = (value.decode('latin'))
+        else:
+            errstr = "name may be str or None, but not {}"
+            raise TypeError(errstr, type(value).__name__)
+
+        if len(_value) > 255:
+            errstr = 'name can not be more than 255 octets NDEF Record ID'
+            raise ValueError(errstr)
+
+        self._name = _value
+
 
     @property
     def data(self):
@@ -38,7 +71,7 @@ class Record(object):
         """Return an informal representation suitable for printing."""
         cls = type(self)
         if cls is Record:
-            s = "NDEF Record TYPE '{r.type}'"
+            s = "NDEF Record TYPE '{}'".format(self.type)
         else:
             name = (cls.__module__.split('.')[-1].capitalize() + cls.__name__
                     if isinstance(self, LocalRecord) else cls.__name__)
@@ -120,6 +153,45 @@ class Record(object):
             TYPE = b''
 
         return prefix[TNF] + (TYPE.decode('ascii'))
+
+
+    @classmethod
+    def _encode_type(cls, value):
+        if value is None:
+            _value = b''
+        elif isinstance(value, bytearray):
+            _value = bytes(value)
+        elif isinstance(value, (bytes, str)):
+            _value = (value if isinstance(value, bytes)
+                      else value.encode('ascii'))
+        else:
+            errstr = 'record type string may be str or bytes, but not {}'
+            raise ValueError(errstr.format(type(value).__name__))
+
+        if _value == b'':
+            (TNF, TYPE) = (0, b'')
+        elif _value.startswith(b'urn:nfc:wkt:'):
+            (TNF, TYPE) = (1, _value[12:])
+#        elif re.match(b'[a-zA-Z0-9-]+/[a-zA-Z0-9-+.]+', _value):
+#            (TNF, TYPE) = (2, _value)
+#        elif all(urlsplit(_value)[0:3]):
+#            (TNF, TYPE) = (3, _value)
+        elif _value.startswith(b'urn:nfc:ext:'):
+            (TNF, TYPE) = (4, _value[12:])
+        elif _value == b'unknown':
+            (TNF, TYPE) = (5, b'')
+        elif _value == b'unchanged':
+            (TNF, TYPE) = (6, b'')
+        else:
+            errstr = "can not convert the record type string '{}'"
+            raise ValueError(errstr.format(value))
+
+        if len(TYPE) > 255:
+            errstr = "an NDEF Record TYPE can not be more than 255 octet"
+            raise ValueError(errstr)
+
+        return (TNF, TYPE)
+
 
     @classmethod
     def _decode_struct(cls, fmt, octets, offset=0, always_tuple=False):
