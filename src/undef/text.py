@@ -5,6 +5,7 @@ from .record import Record, GlobalRecord
 
 class TextRecord(GlobalRecord):
     _type = 'urn:nfc:wkt:T'
+    _decode_min_payload_length = 1
 
     def __init__(self, text=None, language=None, encoding=None):
         """Initialize an NDEF TextRecord. Default values are the empty text
@@ -53,17 +54,6 @@ class TextRecord(GlobalRecord):
             raise ValueError(errstr.format(value))
         self._utfx = value
 
-    def __format__(self, format_spec):
-        if format_spec == 'args':
-            s = "{r.text!r}, {r.language!r}, {r.encoding!r}"
-            return s.format(r=self)
-
-        if format_spec == 'data':
-            return ("Text '{r.text}' Language '{r.language}' "
-                    "Encoding '{r.encoding}'".format(r=self))
-
-        return super(TextRecord, self).__format__(format_spec)
-
     def _encode_payload(self):
         """Called from Record._encode for the byte representation of the NDEF
         Text Record PAYLOAD requested through the Record.data attribute.
@@ -73,8 +63,6 @@ class TextRecord(GlobalRecord):
         TEXT = self.text.encode(UTFX)
         FLAG = self._encode_struct('B', len(LANG) | ((UTFX == "UTF-16") << 7))
         return FLAG + LANG + TEXT
-
-    _decode_min_payload_length = 1
 
     @classmethod
     def _decode_payload(cls, octets, errors):
