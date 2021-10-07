@@ -337,13 +337,3 @@ class LocalRecord(Record):  # pragma: no cover
 
     def _decode_payload(cls, octets, errors):
         pass
-
-
-def convert(conversion):
-    def converter(setter):
-        @wraps(setter)
-        def wrapper(self, value):
-            _convert = getattr(self, '_' + conversion)
-            return setter(self, _convert(value, setter.__name__))
-        return wrapper
-    return
