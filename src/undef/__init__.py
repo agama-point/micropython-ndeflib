@@ -9,6 +9,7 @@
 __version__ = "0.0.1"
 
 from . import message
+from . import microuri
 from . import record
 from . import text
 

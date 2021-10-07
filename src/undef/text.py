@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from .record import Record, GlobalRecord, convert
+from .record import Record, GlobalRecord
 
 
 class TextRecord(GlobalRecord):
@@ -14,6 +14,10 @@ class TextRecord(GlobalRecord):
         self.language = language if language is not None else 'en'
         self.encoding = encoding if encoding is not None else 'UTF-8'
 
+    def __str__(self):
+        """Return an informal representation suitable for printing."""
+        return ("NDEF TextRecord ID '{}' Text '{}'").format(self.name, self.text)
+
     @property
     def text(self):
         """NDEF Text Record content."""
@@ -21,7 +25,7 @@ class TextRecord(GlobalRecord):
 
     @text.setter
     def text(self, value):
-        self._value_to_unicode(value, "text")
+        value = self._value_to_unicode(value, "text")
         self._text = value
 
     @property
