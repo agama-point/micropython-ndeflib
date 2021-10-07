@@ -10,5 +10,15 @@ def main():
         print(r)
 
 
+    t = undef.text.TextRecord("Test encoder")
+    data = undef.message_encoder([t])
+    r = b''.join(data)
+    print(r)
+
+    data = undef.message_decoder(r)
+    for r in data:
+        print(r)
+
+
 if __name__ == "__main__":
     main()

@@ -6,6 +6,10 @@ class DecodeError(Exception):
     """NDEF decode error exception class."""
     pass
 
+class EncodeError(Exception):
+    """NDEF encode error exception class."""
+    pass
+
 class Record(object):
 
     MAX_PAYLOAD_SIZE = 0x100000
@@ -78,6 +82,36 @@ class Record(object):
                     if isinstance(self, LocalRecord) else cls.__name__)
             s = "NDEF {}".format(name)
         return (s + " ID '{}' {}").format(self.name, self.data)
+
+
+    def _encode(self, mb=False, me=False, cf=False, stream=None):
+        TNF, TYPE = self._encode_type(self.type)
+        if TNF == 0:
+            TYPE, ID, PAYLOAD = b'', b'', b''
+        elif TNF == 5:
+            TYPE, ID, PAYLOAD = b'', self.name.encode('latin'), self.data
+        elif TNF == 6:
+            TYPE, ID, PAYLOAD = b'', b'', self.data
+        else:
+            ID, PAYLOAD = self.name.encode('latin'), self.data
+
+        if len(PAYLOAD) > self.MAX_PAYLOAD_SIZE:
+            errstr = "payload of more than {} octets can not be encoded"
+            raise EncodeError(errstr.format(self.MAX_PAYLOAD_SIZE))
+
+        MB = 0b10000000 if mb else 0
+        ME = 0b01000000 if me else 0
+        CF = 0b00100000 if cf else 0
+        SR = 0b00010000 if len(PAYLOAD) < 256 else 0
+        IL = 0b00001000 if len(ID) > 0 else 0
+
+        octet0 = MB | ME | CF | SR | IL | TNF
+        struct_format = '>BB' + ('B' if SR else 'L') + ('B' if IL else '')
+        fields = (octet0, len(TYPE), len(PAYLOAD)) + ((len(ID),) if IL else ())
+
+        s = BytesIO() if stream is None else stream
+        n = s.write(struct.pack(struct_format, *fields) + TYPE + ID + PAYLOAD)
+        return s.getvalue() if stream is None else n
 
 
     @classmethod
