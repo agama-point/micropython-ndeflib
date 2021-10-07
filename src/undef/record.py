@@ -1,5 +1,6 @@
 from io import BytesIO
 import struct
+import re
 
 class DecodeError(Exception):
     """NDEF decode error exception class."""
@@ -172,8 +173,8 @@ class Record(object):
             (TNF, TYPE) = (0, b'')
         elif _value.startswith(b'urn:nfc:wkt:'):
             (TNF, TYPE) = (1, _value[12:])
-#        elif re.match(b'[a-zA-Z0-9-]+/[a-zA-Z0-9-+.]+', _value):
-#            (TNF, TYPE) = (2, _value)
+        elif re.match(b'[a-zA-Z0-9-]+/[a-zA-Z0-9-+.]+', _value):
+            (TNF, TYPE) = (2, _value)
 #        elif all(urlsplit(_value)[0:3]):
 #            (TNF, TYPE) = (3, _value)
         elif _value.startswith(b'urn:nfc:ext:'):
