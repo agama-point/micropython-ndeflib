@@ -14,7 +14,9 @@ def main():
 
 
     t = undef.text.TextRecord("Test encoder")
-    data = undef.message_encoder([t])
+    u = undef.microuri.MicroUri("https://example.org")
+    u2 = undef.microuri.MicroUri("https://www.example.org")
+    data = undef.message_encoder([t,u,u2])
     r = b''.join(data)
     print(r)
 
