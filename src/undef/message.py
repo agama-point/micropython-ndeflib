@@ -10,7 +10,7 @@ from .record import Record, DecodeError
 def message_decoder(stream_or_bytes, errors='strict',
                     known_types=Record._known_types):
 
-    if isinstance(stream_or_bytes, (io.BytesIO)):
+    if isinstance(stream_or_bytes, (io.BytesIO, io.IOBase)):
         stream = stream_or_bytes
     elif isinstance(stream_or_bytes, (bytes, bytearray)):
         stream = io.BytesIO(stream_or_bytes)
