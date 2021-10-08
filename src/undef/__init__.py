@@ -6,7 +6,7 @@
 # Based on https://github.com/nfcpy/ndeflib/
 # Rewritten to work with micropython
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 from . import message
 from . import microuri
