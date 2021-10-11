@@ -344,10 +344,10 @@ class Record(object):
             if isinstance(value, bytearray):
                 return value.decode('ascii')
             errstr = name + ' accepts str or bytes, but not {}'
-            raise cls._type_error(errstr, type(value).__name__)
+            raise ValueError(errstr, type(value).__name__)
         except UnicodeError:
-            errstr = name + ' conversion requires ascii text, but got {!r}'
-            raise cls._value_error(errstr, value)
+            errstr = name + ' conversion requires ascii text, but got'
+            raise ValueError(errstr, value)
 
 
 class GlobalRecord(Record):  # pragma: no cover
