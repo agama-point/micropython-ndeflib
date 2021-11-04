@@ -1,2 +1,2 @@
-# undeflib
-uNDEF library for micropython
+# micropython-ndeflib
+NDEF library for micropython
