@@ -6,7 +6,7 @@
 # Based on https://github.com/nfcpy/ndeflib/
 # Rewritten to work with micropython
 
-__version__ = "0.2.1"
+__version__ = "0.0.1"
 
 from . import message
 from . import microuri
@@ -15,3 +15,4 @@ from . import text
 
 message_decoder = message.message_decoder
 message_encoder = message.message_encoder
+
